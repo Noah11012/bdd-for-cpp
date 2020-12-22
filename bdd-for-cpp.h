@@ -9,7 +9,7 @@ using std::string;
 
 #include <stdarg.h>
 
-/*
+/* @Incomplete
 
 Bdd For C++ is a header only library for testing your own code with the least amount of hassle possible. That means not only should it be headache free to setup the libary (one of the main reasons this is a header only library) but should have everything that a programmer will want.
 
@@ -25,15 +25,18 @@ Example: test.cpp
 spec("example") {
 }
 
-Only one specification can be defined in each file otherwise you will get a compiler error.
+Only one specification can be defined in each file otherwise you will get a compiler error. Inside the spec block you can define a series of it() blocks
+which will contain code that you want to test. it() takes one argument that is the message that explains what should happen and when the test passes or fails
+you will know which one did.
 
+To assert output use check() which takes a condition.
 */
 
 // So we can make the output look pretty widePeepoHappy
-static char const *color_red   = "\033[31m";
-static char const *color_green = "\033[32m";
-static char const *color_blue  = "\033[34m";
-static char const *color_reset = "\033[0m";
+static char const *__color_red__   = "\033[31m";
+static char const *__color_green__ = "\033[32m";
+static char const *__color_blue__  = "\033[34m";
+static char const *__color_reset__ = "\033[0m";
 
 #define NO_BDD_COLOR_OUTPUT 1 // Color output can be disabled if need. Useful if a terminal like output program doesn't display ansi color.
 
@@ -53,7 +56,7 @@ static void __printf__(char const *format, ...) { // @Refactor: Setting the curr
     va_end(args);
     
 #ifndef NO_BDD_COLOR_OUTPUT
-    printf("%s", color_reset);
+    printf("%s", __color_reset__);
     __current_color__ = nullptr;
 #endif
 }
@@ -75,7 +78,7 @@ static vector<string>  __list_of_whats__;
 
 int main() {
     if (__bdd_function_is_defined__ == false) {
-        __current_color__ = color_red;
+        __current_color__ = __color_red__;
         __printf__("Error: ");
         __printf__("No specification block has been defined in this file!\n");
         return 1;
@@ -85,13 +88,13 @@ int main() {
     __bdd_function__("", &test_count); // First do a preliminary pass to see how many tests there are
     
     if (test_count == 0) {
-        __current_color__ = color_blue;
+        __current_color__ = __color_blue__;
         __printf__("Warning: ");
         __printf__("No it() blocks created\n");
         return 1;
     }
     
-    __current_color__ = color_blue;
+    __current_color__ = __color_blue__;
     __printf__("%s\n", __spec_name__);
     
     // Make sure everything is lined up properly
@@ -110,7 +113,7 @@ int main() {
         __bdd_function__(__list_of_whats__[i], nullptr);
         
         if (__checks__.size() == 0) {
-            __current_color__ = color_blue;
+            __current_color__ = __color_blue__;
             __printf__("Warning: ");
             __printf__("Zero checks within '%s'\n", __current_what__);
             return 1;
@@ -153,4 +156,4 @@ __run__ &&                                                                 \
 (__run__ ? __current_what__ = what : 0);                                   \
 __run__ = false)                                                           \
 
-#define check(condition) __checks__.push_back({ condition, __LINE__ })
+#define check(condition) __checks__.push_back({ (condition), __LINE__ })
