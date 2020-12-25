@@ -9,36 +9,13 @@ using std::string;
 
 #include <stdarg.h>
 
-/* @Incomplete
-
-Bdd For C++ is a header only library for testing your own code with the least amount of hassle possible. That means not only should it be headache free to setup the libary (one of the main reasons this is a header only library) but should have everything that a programmer will want.
-
-===========================User Manual===========================
-
-For every module in your program/project that you want to test create a single C++ file and include bdd_for_cpp.h.
-Next create a specification block with the macro spec() and give it a name. You will probably want the name to be the module you're testing.
-
-Example: test.cpp
-
-#include "bdd_for_cpp.h"
-
-spec("example") {
-}
-
-Only one specification can be defined in each file otherwise you will get a compiler error. Inside the spec block you can define a series of it() blocks
-which will contain code that you want to test. it() takes one argument that is the message that explains what should happen and when the test passes or fails
-you will know which one did.
-
-To assert output use check() which takes a condition.
-*/
-
 // So we can make the output look pretty widePeepoHappy
 static char const *__color_red__   = "\033[31m";
-static char const *__color_green__ = "\033[32m";
+// static char const *color_green = "\033[32m";
 static char const *__color_blue__  = "\033[34m";
 static char const *__color_reset__ = "\033[0m";
 
-#define NO_BDD_COLOR_OUTPUT 1 // Color output can be disabled if need. Useful if a terminal like output program doesn't display ansi color.
+// #define NO_BDD_COLOR_OUTPUT 1 // Color output can be disabled if need. Useful if a terminal like output program doesn't display ansi color.
 
 static char const *__current_color__;
 static void __printf__(char const *format, ...) { // @Refactor: Setting the current color then printing doesn't seem all that great
@@ -75,6 +52,8 @@ static vector<__Bdd_Check__> __failed_checks__;
 extern char const     *__spec_name__;
 static char const     *__current_what__;
 static vector<string>  __list_of_whats__;
+
+static bool __run_once__ = true;
 
 int main() {
     if (__bdd_function_is_defined__ == false) {
@@ -149,6 +128,8 @@ int main() {
 bool __bdd_function_is_defined__ = true;                                \
 void __bdd_function__(std::string const &__what__, int *__test_count__) \
 
+#define run_once() for (; __run_once__; __run_once__ = false)
+
 #define it(what)                                                                    \
 if (__test_count__) { (*__test_count__)++; __list_of_whats__.push_back(what); } \
 for (bool __run__ = (strcmp(what, __what__.c_str()) == 0);                      \
@@ -156,4 +137,11 @@ __run__ &&                                                                 \
 (__run__ ? __current_what__ = what : 0);                                   \
 __run__ = false)                                                           \
 
-#define check(condition) __checks__.push_back({ (condition), __LINE__ })
+static bool __bdd_condition__;
+static bool __push_check__(bool condition, int line_number) {
+    __checks__.push_back({ condition, line_number });
+    return __bdd_condition__;
+}
+
+
+#define check(condition) (__bdd_condition__ = condition, __push_check__(__bdd_condition__, __LINE__))
